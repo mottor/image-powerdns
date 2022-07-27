@@ -5,21 +5,37 @@ mkdir -p /etc/powerdns/pdns.d
 PDNSVARS=`echo ${!PDNSCONF_*}`
 touch /etc/powerdns/pdns.conf
 
+echo " ============================="
+echo " "
+echo "Initial PowerDNS config:"
+cat /etc/powerdns/pdns.conf
+echo " "
+echo " ============================="
+
+#echo '' > /etc/powerdns/pdns.conf
+
+if [ ! -z $PDNSCONF_API_KEY ]; then
+  echo "api=yes" >> /etc/powerdns/pdns.conf
+  echo "webserver=yes" >> /etc/powerdns/pdns.conf
+  if [ -z $PDNSCONF_WEBSERVER_ADDRESS ]; then
+    echo "webserver-address=0.0.0.0" >> /etc/powerdns/pdns.conf
+  fi
+  if [ -z $PDNSCONF_WEBSERVER_ALLOW_FROM ]; then
+    echo "webserver-allow-from=0.0.0.0/0" >> /etc/powerdns/pdns.conf
+  fi
+  if [ -z $PDNSCONF_WEBSERVER_PORT ]; then
+    echo "webserver-port=8081" >> /etc/powerdns/pdns.conf
+  fi
+  if [ -z $PDNSCONF_WEBSERVER_PASSWORD ]; then
+    echo "webserver-password=$PDNSCONF_WEBSERVER_PASSWORD" >> /etc/powerdns/pdns.conf
+  fi
+fi
+
 for var in $PDNSVARS; do
   varname=`echo ${var#"PDNSCONF_"} | awk '{print tolower($0)}' | sed 's/_/-/g'`
   value=`echo ${!var} | sed 's/^$\(.*\)/\1/'`
   echo "$varname=$value" >> /etc/powerdns/pdns.conf
 done
-
-if [ ! -z $PDNSCONF_API_KEY ]; then
-  cat >/etc/powerdns/pdns.d/api.conf <<EOF
-api=yes
-webserver=yes
-webserver-address=0.0.0.0
-webserver-allow-from=0.0.0.0/0
-EOF
-
-fi
 
 mysqlcheck() {
   # Wait for MySQL to be available...
@@ -55,6 +71,13 @@ EOF
   cron -f &
 fi
 
+echo " ============================="
+echo " "
+echo "Current PowerDNS config:"
+cat /etc/powerdns/pdns.conf
+echo " "
+echo " ============================="
+
 # Start PowerDNS
 # same as /etc/init.d/pdns monitor
 echo "Starting PowerDNS..."
@@ -62,5 +85,5 @@ echo "Starting PowerDNS..."
 if [ "$#" -gt 0 ]; then
   exec /usr/sbin/pdns_server "$@"
 else
-  exec /usr/sbin/pdns_server --daemon=no --guardian=no --control-console --loglevel=9
+  exec /usr/sbin/pdns_server --daemon=no --guardian=no --control-console --loglevel=9 --tcp-control-address=0.0.0.0 --tcp-control-port=8888 --tcp-control-secret="${PDNS_CONTROL_SECRET:-hX4mT0hU8wW4rF0h}"
 fi

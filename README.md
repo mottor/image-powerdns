@@ -12,4 +12,9 @@ Command to use:
 
 - https://github.com/mrsrvman/docker-powerdns
 - https://github.com/interlegis/docker-powerdns
+
+See also:
+
 - https://github.com/psi-4ward/docker-powerdns
+- https://github.com/synyx/docker-pdns
+- https://github.com/ohhara-shiojiri/docker-powerdns
