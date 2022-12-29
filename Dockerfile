@@ -38,6 +38,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y pdns-
     && rm /etc/cron.daily/* \
     && cleanimage
 
+# Default DNS ports
 EXPOSE 53/udp 53/tcp
+
+# Default webserver port
+EXPOSE 8081/tcp
 
 CMD ["/usr/local/bin/start.sh"]
